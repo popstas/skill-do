@@ -1,0 +1,87 @@
+#!/bin/sh
+# telegram-send - send a message to a Telegram chat via the Bot API.
+#
+# Usage:
+#   telegram-send "message text"
+#   echo "message text" | telegram-send
+#   telegram-send --chat <chat_id> --token <bot_token> "message"
+#
+# Environment:
+#   TELEGRAM_TOKEN     bot token (required unless --token given)
+#   TELEGRAM_CHAT_ID   target chat id (required unless --chat given)
+#   DRY_RUN=1          print the resolved request instead of calling curl
+#
+# Exit codes:
+#   0  message sent (or printed in DRY_RUN)
+#   1  curl failure
+#   2  missing credentials / usage error
+set -eu
+
+PARSE_MODE="Markdown"
+DISABLE_PREVIEW="true"
+TOKEN="${TELEGRAM_TOKEN:-}"
+CHAT="${TELEGRAM_CHAT_ID:-}"
+TEXT=""
+HAVE_TEXT=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --chat)
+      [ $# -ge 2 ] || { echo "telegram-send: --chat needs a value" >&2; exit 2; }
+      CHAT="$2"; shift 2 ;;
+    --token)
+      [ $# -ge 2 ] || { echo "telegram-send: --token needs a value" >&2; exit 2; }
+      TOKEN="$2"; shift 2 ;;
+    --parse-mode)
+      [ $# -ge 2 ] || { echo "telegram-send: --parse-mode needs a value" >&2; exit 2; }
+      PARSE_MODE="$2"; shift 2 ;;
+    --)
+      shift
+      if [ $# -gt 0 ]; then TEXT="$*"; HAVE_TEXT=1; fi
+      break ;;
+    -*)
+      echo "telegram-send: unknown option: $1" >&2; exit 2 ;;
+    *)
+      TEXT="$1"; HAVE_TEXT=1; shift ;;
+  esac
+done
+
+# Read text from stdin when not given as an argument.
+if [ "$HAVE_TEXT" -eq 0 ]; then
+  if [ -t 0 ]; then
+    echo "telegram-send: no message given (pass an argument or pipe via stdin)" >&2
+    exit 2
+  fi
+  TEXT="$(cat)"
+fi
+
+if [ -z "$TOKEN" ]; then
+  echo "telegram-send: missing bot token (set TELEGRAM_TOKEN or pass --token)" >&2
+  exit 2
+fi
+if [ -z "$CHAT" ]; then
+  echo "telegram-send: missing chat id (set TELEGRAM_CHAT_ID or pass --chat)" >&2
+  exit 2
+fi
+
+URL="https://api.telegram.org/bot${TOKEN}/sendMessage"
+
+if [ "${DRY_RUN:-0}" = "1" ]; then
+  echo "DRY_RUN telegram-send"
+  echo "url=${URL}"
+  echo "chat_id=${CHAT}"
+  echo "parse_mode=${PARSE_MODE}"
+  echo "disable_web_page_preview=${DISABLE_PREVIEW}"
+  echo "text=${TEXT}"
+  exit 0
+fi
+
+curl -fsS \
+  --data-urlencode "chat_id=${CHAT}" \
+  --data-urlencode "text=${TEXT}" \
+  --data-urlencode "parse_mode=${PARSE_MODE}" \
+  --data-urlencode "disable_web_page_preview=${DISABLE_PREVIEW}" \
+  "${URL}" >/dev/null || {
+    echo "telegram-send: curl failed" >&2
+    exit 1
+  }
