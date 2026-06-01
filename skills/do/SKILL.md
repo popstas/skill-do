@@ -19,11 +19,15 @@ When invoked as `/do` (no sub-command):
    "how to launch work" instructions there before anything below.
 2. Read `docs/TODO.md`. Count "task units" (markdown list items `- `, `- [ ]`, `* `, plus level
    1–3 headings other than the title). Summarize what's queued.
-3. If the list looks ready (roughly 3+ task units and no existing plan under `docs/plans/`),
-   offer to run `/ralphex:ralphex-adopt docs/TODO.md`. This converts the free-form list into a
-   structured ralphex plan in `docs/plans/`.
-4. After the adopt plan is approved, offer to run `/ralphex:ralphex` to execute it autonomously.
-5. If nothing is ready, say so and stop — don't manufacture work.
+3. Use planning skill like `brainstorming`, `plan` from available skills. Clarify the plan, update the TODO.md file, commit.
+4. If the list looks ready (roughly 3+ task units and no existing plan under `docs/plans/`),
+   **before running `/ralphex:ralphex-adopt`, ask the user how e2e tests should be done** for
+   this work (what to run, how to verify behavior end-to-end) so the adopted plan can include
+   them. Then offer to run `/ralphex:ralphex-adopt docs/TODO.md`. This converts the free-form
+   list into a structured ralphex plan in `docs/plans/`.
+5. After the adopt plan is approved, offer to run `/ralphex:ralphex` to execute it autonomously.
+6. If nothing is ready, say so and stop — don't manufacture work.
+7. When `/ralphex:ralphex` is done, mark the tasks as completed in the TODO.md file, commit. Offer to create pull request.
 
 ### `do add <task>` / `do remove <task>`
 
@@ -32,6 +36,9 @@ When invoked as `/do` (no sub-command):
 - `do remove <task>`: remove the matching list item (match on the task text, confirm if ambiguous).
 - **Commit prefix for task-list edits is `task:`** (e.g. `task: add telegram retry task`).
   This is distinct from code commits — only `docs/TODO.md` changes use `task:`.
+- **If the request mentions `push`** (e.g. `do add <task> push`, "add … and push"): after
+  editing `docs/TODO.md`, commit it with the `task:` prefix and `git push`. Stage only
+  `docs/TODO.md` so unrelated working-tree changes are left untouched.
 
 ## Execution-environment detection
 
@@ -54,7 +61,7 @@ In all branches the payload is the same message produced by `build_message()` in
 `todo_check_ready.py`: a short task-count summary, a copy-paste shell command
 (`cd <abs project> && claude "/ralphex:ralphex-adopt docs/TODO.md"`), a best-effort
 `claude-code://open?cwd=...&prompt=...` URL, the `/ralphex:ralphex` follow-up note, and the
-`todo:` commit-prefix reminder.
+`task:` commit-prefix reminder.
 
 ## Cron path
 
