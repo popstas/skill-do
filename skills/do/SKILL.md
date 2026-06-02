@@ -20,14 +20,18 @@ When invoked as `/do` (no sub-command):
 2. Read `docs/TODO.md`. Count "task units" (markdown list items `- `, `- [ ]`, `* `, plus level
    1–3 headings other than the title). Summarize what's queued.
 3. Use planning skill like `brainstorming`, `plan` from available skills. Clarify the plan, update the TODO.md file, commit.
-4. If the list looks ready (roughly 3+ task units and no existing plan under `docs/plans/`),
+4. **Clear completed todos before implementing.** Remove already-completed (`[x]`) items from
+   `docs/TODO.md` so the adopt/implement step only picks up open work, then commit the cleanup
+   with the `task:` prefix. (Completed items live in git history / the merged PR — they don't
+   need to linger in the task list.)
+5. If the list looks ready (roughly 3+ open task units and no existing plan under `docs/plans/`),
    **before running `/ralphex:ralphex-adopt`, ask the user how e2e tests should be done** for
    this work (what to run, how to verify behavior end-to-end) so the adopted plan can include
    them. Then offer to run `/ralphex:ralphex-adopt docs/TODO.md`. This converts the free-form
    list into a structured ralphex plan in `docs/plans/`.
-5. After the adopt plan is approved, offer to run `/ralphex:ralphex` to execute it autonomously.
-6. If nothing is ready, say so and stop — don't manufacture work.
-7. When `/ralphex:ralphex` is done, mark the tasks as completed in the TODO.md file, commit. Offer to create pull request.
+6. After the adopt plan is approved, offer to run `/ralphex:ralphex` to execute it autonomously.
+7. If nothing is ready, say so and stop — don't manufacture work.
+8. When `/ralphex:ralphex` is done, run the **`do finalize`** flow below (mark todo → PR → review → merge → release).
 
 ### `do add <task>` / `do remove <task>`
 
@@ -39,6 +43,39 @@ When invoked as `/do` (no sub-command):
 - **If the request mentions `push`** (e.g. `do add <task> push`, "add … and push"): after
   editing `docs/TODO.md`, commit it with the `task:` prefix and `git push`. Stage only
   `docs/TODO.md` so unrelated working-tree changes are left untouched.
+
+### `do finalize`
+
+An explicit `do finalize` means **ralphex has finished and the branch is ready to PR** — the
+implementation is done, so skip the plan/adopt/implement steps and start directly at step 1 below.
+
+Run once implementation is complete and tests pass. Walk these steps in order, pausing for the
+user where noted — **never merge or release without explicit human confirmation**.
+
+1. **Mark the TODO.** Check off (`[x]`) the items that are actually done — verify each against the
+   code/tests, don't assume. Commit with the `task:` prefix.
+2. **Create the PR.** Push the branch and open a PR against the default branch. **The PR title and
+   description must match the actual changes**: read the diff (`git diff <base>...HEAD`) and write
+   the summary from what changed, not from the original task wording. Keep it concise and
+   reviewer-facing.
+3. **Wait for human review.** Stop here. Let a human review the PR and do not proceed until the
+   user explicitly approves/asks to merge.
+4. **Merge the PR.** Once approved, inspect the branch commits first. If the history is noisy
+   (fixups, `wip`, review-fix churn), prefer a **squash** merge — but **clarify with the user and
+   ask which merge strategy** before merging. If the history is already clean, a normal merge is
+   fine.
+5. **Suggest a release.** After merge, offer to cut a version release. Decide the bump from the
+   branch's changes — **patch** (bugfixes only), **minor** (backward-compatible features), or
+   **major** (breaking changes). Propose your choice with a one-line rationale and **ask the user
+   to confirm the bump level** before tagging.
+6. **Release per the project's rules.** Follow the project's own release process (check
+   `CLAUDE.md` / `deploy.py` / `.github/workflows`). **By default, releases are issued by a GitHub
+   workflow that triggers on a version-tagged commit** — so bump the version, push the tag, and let
+   CI create the GitHub release. Do **not** hand-create the release when the workflow owns it.
+7. **Rewrite the release description.** Wait until the release has actually been issued (CI
+   finished), then edit its description. Base it on the PR description but **trim it for project
+   users, not developers**: drop code/module-level detail, keep what changed and how to use it.
+   **Include the PR mention** (e.g. `#12`).
 
 ## Execution-environment detection
 
