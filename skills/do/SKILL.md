@@ -22,8 +22,9 @@ When invoked as `/do` (no sub-command):
 3. Use planning skill like `brainstorming`, `plan` from available skills. Clarify the plan, update the TODO.md file, commit.
 4. **Clear completed todos before implementing.** Remove already-completed (`[x]`) items from
    `docs/TODO.md` so the adopt/implement step only picks up open work, then commit the cleanup
-   with the `task:` prefix. (Completed items live in git history / the merged PR — they don't
-   need to linger in the task list.)
+   (standalone cleanup → `task:` prefix; if it rides along with related code, fold it into that
+   commit). (Completed items live in git history / the merged PR — they don't need to linger in
+   the task list.)
 5. If the list looks ready (roughly 3+ open task units and no existing plan under `docs/plans/`),
    **before running `/ralphex:ralphex-adopt`, ask the user how e2e tests should be done** for
    this work (what to run, how to verify behavior end-to-end) so the adopted plan can include
@@ -38,22 +39,57 @@ When invoked as `/do` (no sub-command):
 - `do add <task>`: append a `- [ ] <task>` line to `docs/TODO.md` (create the file with a
   top-level heading if it's missing). Keep existing formatting/sections.
 - `do remove <task>`: remove the matching list item (match on the task text, confirm if ambiguous).
-- **Commit prefix for task-list edits is `task:`** (e.g. `task: add telegram retry task`).
-  This is distinct from code commits — only `docs/TODO.md` changes use `task:`.
+- **Commit prefix for standalone task-list edits is `task:`** (e.g. `task: add telegram
+  retry task`) — use it when the change touches only `docs/TODO.md` with no related code.
+- **A TODO edit that accompanies related code may be folded into that code's commit** instead
+  of a separate `task:` commit. When you check off / remove an item as part of implementing it,
+  stage `docs/TODO.md` together with the code and commit under the code's type
+  (`feat:` / `fix:` / etc.) — no extra `task:` commit needed. Only split it out when the TODO
+  change stands alone or relates to unrelated work.
 - **If the request mentions `push`** (e.g. `do add <task> push`, "add … and push"): after
-  editing `docs/TODO.md`, commit it with the `task:` prefix and `git push`. Stage only
-  `docs/TODO.md` so unrelated working-tree changes are left untouched.
+  editing `docs/TODO.md`, commit it (standalone → `task:` prefix and stage only `docs/TODO.md`
+  so unrelated working-tree changes are left untouched; alongside related code → fold into that
+  commit) and `git push`.
+
+### `do early pr`
+
+**Only when the user explicitly asks "do early pr"** (never automatically). This opens the PR as
+soon as ralphex finishes *implementing* — without waiting for the review pipeline — so a human can
+start reviewing while ralphex's own review passes keep refining the branch.
+
+ralphex (full mode) emits ordered markers into its progress file
+(`.ralphex/progress/progress-{plan-stem}.txt`): `<<<RALPHEX:ALL_TASKS_DONE>>>` once every task's
+checkboxes are implemented, then the review pipeline runs and emits `<<<RALPHEX:REVIEW_DONE>>>`
+(Claude) → `<<<RALPHEX:CODEX_REVIEW_DONE>>>` (Codex) → `<<<RALPHEX:REVIEW_DONE>>>` (final Claude).
+Each phase commits to the plan's branch.
+
+Flow:
+
+1. **Watch for tasks-done.** While ralphex runs, watch the progress file for
+   `<<<RALPHEX:ALL_TASKS_DONE>>>` (a background `until grep -q ... ; do sleep 5; done` loop gives a
+   single wake-up; also stop watching if the ralphex process exits first).
+2. **Open the PR immediately** when the marker appears — push the branch and `gh pr create` against
+   the default branch. Write the title/description from the **actual diff** (`git diff <base>...HEAD`),
+   not the task wording. Mark the PR as a draft (`--draft`) since review passes are still pending.
+3. **Keep pushing review commits.** Let the review pipeline continue. Each time it commits (after a
+   `REVIEW_DONE` / `CODEX_REVIEW_DONE` marker, and at final run completion), `git push` so the open
+   PR stays current. When the whole ralphex run finishes, do a final push and mark the PR ready for
+   review (`gh pr ready`).
+4. **Do not merge or release here.** Early-PR only opens and keeps the PR fresh; merge + release
+   still go through `do finalize` with explicit human confirmation.
 
 ### `do finalize`
 
 An explicit `do finalize` means **ralphex has finished and the branch is ready to PR** — the
 implementation is done, so skip the plan/adopt/implement steps and start directly at step 1 below.
+(If `do early pr` already opened the PR, step 2 below just updates it instead of creating a new one.)
 
 Run once implementation is complete and tests pass. Walk these steps in order, pausing for the
 user where noted — **never merge or release without explicit human confirmation**.
 
 1. **Mark the TODO.** Check off (`[x]`) the items that are actually done — verify each against the
-   code/tests, don't assume. Commit with the `task:` prefix.
+   code/tests, don't assume. Commit it — fold the checkbox into the related code commit when one
+   is part of this change, otherwise use a standalone `task:` commit.
 2. **Create the PR.** Push the branch and open a PR against the default branch. **The PR title and
    description must match the actual changes**: read the diff (`git diff <base>...HEAD`) and write
    the summary from what changed, not from the original task wording. Keep it concise and
