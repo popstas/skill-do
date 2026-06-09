@@ -93,7 +93,7 @@ user where noted — **never merge or release without explicit human confirmatio
 2. **Create the PR.** Push the branch and open a PR against the default branch. **The PR title and
    description must match the actual changes**: read the diff (`git diff <base>...HEAD`) and write
    the summary from what changed, not from the original task wording. Keep it concise and
-   reviewer-facing.
+   reviewer-facing. Add checklist for manual checks of the features.
 3. **Wait for human review.** Stop here. Let a human review the PR and do not proceed until the
    user explicitly approves/asks to merge.
 4. **Merge the PR.** Once approved, inspect the branch commits first. If the history is noisy
