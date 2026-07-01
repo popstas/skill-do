@@ -1,6 +1,7 @@
 ---
 name: do
 description: Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-plan.
+argument-hint: "[add | remove | finalize | early pr]"
 ---
 
 `do` is the orchestrator around a project's `docs/TODO.md`. You run it inside an agent to evaluate
