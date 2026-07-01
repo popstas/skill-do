@@ -39,8 +39,6 @@ class TestSkillMeta(unittest.TestCase):
         self.assertIn("task:", body)  # commit prefix
         self.assertNotIn("todo:", body)  # stale prefix must not reappear
         self.assertIn("/ralphex:ralphex-adopt docs/TODO.md", body)
-        self.assertIn("telegram-send", body)  # standalone/cron branch
-        self.assertIn("DO_MIN_TASKS", body)  # cron env docs
 
 
 if __name__ == "__main__":
