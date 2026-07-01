@@ -1,6 +1,6 @@
 ---
 name: do
-description: Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-adopt.
+description: Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-plan.
 ---
 
 `do` is the orchestrator around a project's `docs/TODO.md`. You run it inside an agent to evaluate
@@ -15,18 +15,28 @@ When invoked as `/do` (no sub-command):
    "how to launch work" instructions there before anything below.
 2. Read `docs/TODO.md`. Count "task units" (markdown list items `- `, `- [ ]`, `* `, plus level
    1–3 headings other than the title). Summarize what's queued.
-3. Use planning skill like `brainstorming`, `ralphex-plan` from available skills. Clarify the plan, update the TODO.md file, commit.
+3. **Pick a planning mode** from the task summary — match the ceremony to the work:
+   - **Complex work, or 3+ open task units** → use `/ralphex:ralphex-plan` (see step 5) to author
+     a structured plan in `docs/plans/`, then execute it with `/ralphex:ralphex`.
+   - **1–2 straightforward tasks** → don't reach for ralphex. Use a lighter planning skill
+     (`brainstorming` / `plan` from available skills), clarify the approach, then implement it
+     in-session.
+   - **A single trivial task** → suggest **auto mode**: skip planning entirely and just implement
+     it directly in-session (no plan file, no ralphex).
+
+   In every mode, clarify the plan with the user, update `docs/TODO.md`, and commit.
 4. **Clear completed todos before implementing.** Remove already-completed (`[x]`) items from
-   `docs/TODO.md` so the adopt/implement step only picks up open work, then commit the cleanup
+   `docs/TODO.md` so the plan/implement step only picks up open work, then commit the cleanup
    (standalone cleanup → `task:` prefix; if it rides along with related code, fold it into that
    commit). (Completed items live in git history / the merged PR — they don't need to linger in
    the task list.)
-5. If the list looks ready (roughly 3+ open task units and no existing plan under `docs/plans/`),
-   **before running `/ralphex:ralphex-adopt`, ask the user how e2e tests should be done** for
-   this work (what to run, how to verify behavior end-to-end) so the adopted plan can include
-   them. Then offer to run `/ralphex:ralphex-adopt docs/TODO.md`. This converts the free-form
-   list into a structured ralphex plan in `docs/plans/`.
-6. After the adopt plan is approved, offer to run `/ralphex:ralphex` to execute it autonomously.
+5. **ralphex-plan path** (only when you picked the complex / 3+ mode and no plan already exists
+   under `docs/plans/`): offer to run `/ralphex:ralphex-plan` referencing the queued TODO items.
+   It gathers context and asks about testing strategy interactively and writes a structured plan
+   to `docs/plans/` — make sure end-to-end verification (what to run, how to confirm behavior) is
+   captured while it asks.
+6. After the ralphex-plan is approved, offer to run `/ralphex:ralphex` to execute it autonomously
+   (Full mode).
 7. If nothing is ready, say so and stop — don't manufacture work.
 8. When `/ralphex:ralphex` is done, run the **`do finalize`** flow below (mark todo → PR → review → merge → release).
 
@@ -78,7 +88,7 @@ Flow:
 ### `do finalize`
 
 An explicit `do finalize` means **ralphex has finished and the branch is ready to PR** — the
-implementation is done, so skip the plan/adopt/implement steps and start directly at step 1 below.
+implementation is done, so skip the plan/implement steps and start directly at step 1 below.
 (If `do early pr` already opened the PR, step 2 below just updates it instead of creating a new one.)
 
 Run once implementation is complete and tests pass. Walk these steps in order, pausing for the

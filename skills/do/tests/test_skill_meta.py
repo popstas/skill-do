@@ -38,7 +38,7 @@ class TestSkillMeta(unittest.TestCase):
         body = self.content
         self.assertIn("task:", body)  # commit prefix
         self.assertNotIn("todo:", body)  # stale prefix must not reappear
-        self.assertIn("/ralphex:ralphex-adopt docs/TODO.md", body)
+        self.assertIn("/ralphex:ralphex-plan", body)
 
 
 if __name__ == "__main__":
