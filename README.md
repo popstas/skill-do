@@ -33,13 +33,24 @@ codex plugin add do@skill-do
 Cursor reads [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json). Add the repo through
 Cursor's plugin marketplace UI, or clone it and point Cursor at the checkout.
 
-**Without a plugin system**, symlink the skill directory into the agent's skills path — e.g.
-`ln -s "$PWD/skills/do" ~/.claude/skills/do`.
+### Symlink instead, to work on the skill
+
+A plugin install is a git snapshot under `~/.claude/plugins/cache/`, so edits to a local checkout do
+not reach it until you re-run `/plugin marketplace update`. To run the skill straight from a working
+copy, skip the plugin and symlink the skill directory:
+
+```bash
+ln -sfn "$PWD/skills/do" ~/.claude/skills/do
+ln -sfn ~/.claude/skills/do ~/.codex/skills/do   # Codex follows the chain
+```
+
+Every edit then applies on the next invocation, with nothing to reinstall. Use the plugin flow above
+or the symlink — not both, or two skills end up named `do`.
 
 > The `do` skill also ships inside
 > [`ai-slash-commands`](https://github.com/popstas/ai-slash-commands) for backward compatibility.
-> Installing both puts two skills named `do` on your machine — remove `~/.claude/skills/do` (or
-> stop installing it from there) before installing this plugin.
+> That repo's `npm run install-configs` deletes `~/.claude/skills/do` and copies its own version
+> over it, which silently replaces a symlink set up here.
 
 ## `statusline_block`
 
