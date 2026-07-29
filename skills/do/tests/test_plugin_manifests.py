@@ -15,9 +15,10 @@ PLUGIN_MANIFESTS = [
     ".codex-plugin/plugin.json",
     ".cursor-plugin/plugin.json",
 ]
+# One marketplace manifest serves both Claude Code and Codex: `codex plugin marketplace add`
+# reads .claude-plugin/marketplace.json (verified against `codex plugin list`).
 MARKETPLACE_MANIFESTS = [
     ".claude-plugin/marketplace.json",
-    ".codex-plugin/marketplace.json",
 ]
 # Manifests that declare where the skills live. Claude Code discovers skills/ on its own.
 SKILLS_FIELD_MANIFESTS = [

@@ -3,7 +3,7 @@
 // commit, and create the matching git tag. Does NOT push by default — pushing the tag is
 // what triggers the GitHub release workflow.
 //
-// The version lives in six places (three plugin manifests, two marketplace manifests, and
+// The version lives in five places (three plugin manifests, the marketplace manifest, and
 // package.json), so this script is their single writer. Hand-editing is how they drift.
 //
 // Usage:
@@ -57,7 +57,6 @@ const MANIFESTS = [
   ".claude-plugin/plugin.json",
   ".claude-plugin/marketplace.json",
   ".codex-plugin/plugin.json",
-  ".codex-plugin/marketplace.json",
   ".cursor-plugin/plugin.json",
   "package.json",
 ];

@@ -32,9 +32,7 @@ skill-do/
 ├── .claude-plugin/
 │   ├── plugin.json          # Claude Code plugin manifest
 │   └── marketplace.json     # self-marketplace: /plugin marketplace add popstas/skill-do
-├── .codex-plugin/
-│   ├── plugin.json          # "skills": "./skills/"
-│   └── marketplace.json     # codex plugin marketplace add popstas/skill-do
+├── .codex-plugin/plugin.json    # "skills": "./skills/"
 ├── .cursor-plugin/plugin.json   # "skills": "./skills/"
 ├── skills/do/
 │   ├── SKILL.md             # the skill the agent reads
@@ -50,6 +48,12 @@ skill-do/
 The three manifests are metadata only; all of them point at the single `skills/` directory, so the
 skill body exists once. This mirrors how `superpowers` ships (`.claude-plugin/`, `.codex-plugin/`,
 `.cursor-plugin/` side by side in one repo), verified against the installed plugin caches.
+
+One marketplace manifest covers both Claude Code and Codex: `codex plugin marketplace add
+popstas/skill-do` reads `.claude-plugin/marketplace.json` and lists `do@skill-do` from it — verified
+by adding the published repo as a marketplace and running `codex plugin list`. A
+`.codex-plugin/marketplace.json` was written first and removed as dead weight once that was
+confirmed.
 
 The plugin and the skill are both named `do`, so `/do` keeps working. The repo is named `skill-do`
 because `do` alone is too generic for a repository.
@@ -96,13 +100,13 @@ tooling parses as semver. `0.7.0` is the current version; the next release is `0
 `scripts/release.mjs` — adapted from the parent's release script:
 
 1. refuse to run on a dirty tree;
-2. write the requested 0.x version into all six manifests (three `plugin.json`, two
-   `marketplace.json`, `package.json`);
+2. write the requested 0.x version into all five manifests (three `plugin.json`,
+   `.claude-plugin/marketplace.json`, `package.json`);
 3. regenerate `CHANGELOG.md` via `npx git-cliff`;
 4. commit `chore(release): v0.N.0` and create the annotated tag;
 5. push only with `--push`.
 
-The version lives in six files, so the script is their single writer — hand-editing them is how they
+The version lives in five files, so the script is their single writer — hand-editing them is how they
 drift, and `tests/test_plugin_manifests.py` is the guard.
 
 CI (`.github/workflows/`):

@@ -64,7 +64,7 @@ modes, and agreement between the plugin manifests.
 
 ## Releases
 
-Versioning is `0.x` while the skill is pre-release. The version appears in six manifests, so
+Versioning is `0.x` while the skill is pre-release. The version appears in five manifests, so
 `scripts/release.mjs` is their only writer:
 
 ```bash
