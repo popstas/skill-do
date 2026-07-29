@@ -1,0 +1,38 @@
+{
+  "name": "do",
+  "description": "Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-plan.",
+  "version": "0.7.0",
+  "author": {
+    "name": "Stanislav Popov",
+    "url": "https://github.com/popstas"
+  },
+  "homepage": "https://github.com/popstas/skill-do",
+  "repository": "https://github.com/popstas/skill-do",
+  "license": "MIT",
+  "keywords": [
+    "todo",
+    "planning",
+    "ralphex",
+    "autonomous",
+    "statusline",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Do",
+    "shortDescription": "docs/TODO.md as an autonomous plan-and-code loop",
+    "longDescription": "The do skill reads a project's docs/TODO.md, sizes the open work, picks a planning mode to match it, and hands the result to the ralphex pipeline. It also edits the task list (do add / do remove) and covers the early-PR and finalize flows.",
+    "developerName": "Stanislav Popov",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Work through docs/TODO.md in this project.",
+      "Add a task to docs/TODO.md."
+    ],
+    "websiteURL": "https://github.com/popstas/skill-do"
+  }
+}

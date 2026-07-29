@@ -1,0 +1,19 @@
+{
+  "name": "skill-do",
+  "owner": {
+    "name": "popstas",
+    "url": "https://github.com/popstas/skill-do"
+  },
+  "metadata": {
+    "description": "The do skill: docs/TODO.md as an autonomous plan-and-code loop",
+    "version": "0.7.0"
+  },
+  "plugins": [
+    {
+      "name": "do",
+      "source": "./",
+      "version": "0.7.0",
+      "description": "Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-plan."
+    }
+  ]
+}

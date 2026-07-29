@@ -1,0 +1,20 @@
+{
+  "name": "do",
+  "description": "Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-plan.",
+  "version": "0.7.0",
+  "author": {
+    "name": "Stanislav Popov",
+    "url": "https://github.com/popstas"
+  },
+  "homepage": "https://github.com/popstas/skill-do",
+  "repository": "https://github.com/popstas/skill-do",
+  "license": "MIT",
+  "keywords": [
+    "todo",
+    "planning",
+    "ralphex",
+    "autonomous",
+    "statusline",
+    "skills"
+  ]
+}

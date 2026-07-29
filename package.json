@@ -1,0 +1,21 @@
+{
+  "name": "skill-do",
+  "version": "0.7.0",
+  "private": true,
+  "description": "The do skill packaged for Claude Code, Codex, and Cursor",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/popstas/skill-do.git"
+  },
+  "homepage": "https://github.com/popstas/skill-do#readme",
+  "license": "MIT",
+  "scripts": {
+    "test": "python3 -m unittest discover skills/do/tests",
+    "changelog": "npx git-cliff -o CHANGELOG.md",
+    "release": "node scripts/release.mjs"
+  },
+  "devDependencies": {
+    "git-cliff": "^2.13.1"
+  }
+}

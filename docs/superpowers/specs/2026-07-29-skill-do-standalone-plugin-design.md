@@ -32,7 +32,9 @@ skill-do/
 ├── .claude-plugin/
 │   ├── plugin.json          # Claude Code plugin manifest
 │   └── marketplace.json     # self-marketplace: /plugin marketplace add popstas/skill-do
-├── .codex-plugin/plugin.json    # "skills": "./skills/"
+├── .codex-plugin/
+│   ├── plugin.json          # "skills": "./skills/"
+│   └── marketplace.json     # codex plugin marketplace add popstas/skill-do
 ├── .cursor-plugin/plugin.json   # "skills": "./skills/"
 ├── skills/do/
 │   ├── SKILL.md             # the skill the agent reads
@@ -41,6 +43,7 @@ skill-do/
 │   └── tests/               # unittest: skill frontmatter + statusline-block.sh
 ├── scripts/release.mjs      # version bump across manifests + changelog + tag
 ├── .github/workflows/{test.yml,release.yml}
+├── package.json             # private; pins git-cliff, `npm test`, `npm run release`
 ├── cliff.toml, CHANGELOG.md, README.md, LICENSE, docs/TODO.md
 ```
 
@@ -80,6 +83,9 @@ matches the commit:
 | v0.6.0 | 2026-07-02 | drop cron/telegram, ralphex-plan, tiered planning modes |
 | v0.7.0 | 2026-07-29 | `statusline_block` for ccstatusline |
 
+Dates above are local commit dates. `CHANGELOG.md` renders release dates in UTC, so the three
+series that landed after midnight local time (v0.1.0, v0.4.0, v0.6.0) appear there one day earlier.
+
 Three-part semver (`0.1.0`, not `0.1`) because the plugin manifests carry a `version` field that
 tooling parses as semver. `0.7.0` is the current version; the next release is `0.8.0`.
 
@@ -90,13 +96,14 @@ tooling parses as semver. `0.7.0` is the current version; the next release is `0
 `scripts/release.mjs` — adapted from the parent's release script:
 
 1. refuse to run on a dirty tree;
-2. bump `version` in all three `plugin.json` files to the requested 0.x version;
+2. write the requested 0.x version into all six manifests (three `plugin.json`, two
+   `marketplace.json`, `package.json`);
 3. regenerate `CHANGELOG.md` via `npx git-cliff`;
 4. commit `chore(release): v0.N.0` and create the annotated tag;
 5. push only with `--push`.
 
-The version lives in three manifests, so the script is the single writer — hand-editing them is how
-they drift.
+The version lives in six files, so the script is their single writer — hand-editing them is how they
+drift, and `tests/test_plugin_manifests.py` is the guard.
 
 CI (`.github/workflows/`):
 
@@ -112,9 +119,10 @@ The skill's existing tests move with it and stay the contract:
 - `tests/test_statusline_block.py` — `statusline-block.sh` output for plain/split modes, missing
   file, no checkboxes, env overrides.
 
-Run: `python3 -m unittest discover skills/do/tests`. No JS test suite — there is no JS to test.
-`test_skill_meta.py` gains assertions that the three manifests exist, parse as JSON, and agree on
-`version` and `name`, so a partial release cannot pass CI.
+Run: `python3 -m unittest discover skills/do/tests`. A new `tests/test_plugin_manifests.py` asserts
+that every manifest parses, that they agree on `version`, that the plugin name is `do` and the
+descriptions match `SKILL.md`, and that the `skills` fields resolve to the real skill — so a partial
+release (one manifest bumped, the rest stale) fails CI instead of shipping.
 
 ## Effect on `ai-slash-commands`
 
