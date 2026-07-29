@@ -14,6 +14,17 @@ The skill itself lives in [`skills/do/`](skills/do/); its docs are
 
 The repo is its own marketplace, so all three agents install straight from it.
 
+**Any agent — [`skills`](https://github.com/vercel-labs/skills) CLI**
+
+```bash
+npx skills add popstas/skill-do        # into ./.claude/skills/do, records skills-lock.json
+npx skills add popstas/skill-do -g     # user-level, into ~/.claude/skills/do
+npx skills update do                   # pull a later release
+```
+
+It prompts for the agents to install into; `-a claude-code -s do -y` answers non-interactively.
+A global install writes the same `~/.claude/skills/do` the symlink flow below uses — pick one.
+
 **Claude Code**
 
 ```text
