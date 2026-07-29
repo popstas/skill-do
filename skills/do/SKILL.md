@@ -16,7 +16,11 @@ When invoked as `/do` (no sub-command):
    "how to launch work" instructions there before anything below.
 2. Read `docs/TODO.md`. Count "task units" (markdown list items `- `, `- [ ]`, `* `, plus level
    1–3 headings other than the title). Summarize what's queued.
-3. **Pick a planning mode** from the task summary — match the ceremony to the work:
+3. **Pick a planning mode** from the task summary — match the ceremony to the work. If the
+   complexity isn't clear from the TODO wording alone, do a **quick code investigation** first
+   (grep/read the files the task touches — just enough to gauge scope: how many files/modules are
+   involved, whether it's a localized tweak or a cross-cutting change) so you pick the right mode
+   deliberately rather than guessing. Keep it lightweight — don't turn it into full planning.
    - **Complex work, or 3+ open task units** → use `/ralphex:ralphex-plan` (see step 5) to author
      a structured plan in `docs/plans/`, then execute it with `/ralphex:ralphex`.
    - **1–2 straightforward tasks** → don't reach for ralphex. Use a lighter planning skill
