@@ -90,6 +90,24 @@ class TestStatuslineBlock(unittest.TestCase):
             self.assertNotIn("\x1b", proc.stdout)
             self.assertEqual(proc.stdout, "☑ 2/2 │ 2 week │ 1 week+")
 
+    def test_runs_as_a_bare_command(self):
+        # ccstatusline executes the configured path directly, not through `bash`. Without the
+        # executable bit that is an exit 126 — which every other test here misses, because they
+        # all invoke `bash SCRIPT`.
+        self.assertTrue(os.access(SCRIPT, os.X_OK), "statusline-block.sh must be executable")
+        with tempfile.TemporaryDirectory() as d:
+            docs = Path(d) / "docs"
+            docs.mkdir()
+            (docs / "TODO.md").write_text("- [x] a\n- [ ] b\n", encoding="utf-8")
+            proc = subprocess.run(
+                [str(SCRIPT)],
+                input=json.dumps({"workspace": {"current_dir": d}}),
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertEqual(proc.stdout, "☑ 1/2")
+
 
 if __name__ == "__main__":
     unittest.main()

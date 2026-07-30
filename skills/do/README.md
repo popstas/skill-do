@@ -15,7 +15,8 @@ wording) — `ralphex-plan` → `ralphex` for complex/3+ work, a lighter `brains
 from [`claude-statusline-todo`](https://github.com/popstas/claude-statusline-todo)'s
 `statusline.cjs`.
 
-Output (ANSI-colored; green `done/total`, cyan open counts):
+Output is plain text — no ANSI escapes, so leave ccstatusline's "preserve ANSI colors" **off** and
+let the widget's own color apply:
 
 ```
 plain:  ☑ 3/8
@@ -25,11 +26,14 @@ split:  ☑ 7/23 week │ 48 week+
 It reads Claude Code's status JSON on stdin (ccstatusline forwards it) to find the project cwd,
 then reads `docs/TODO.md` relative to it. Missing file or no checkboxes → prints nothing.
 
-**Wire it into ccstatusline** as a *Custom Command* widget (enable "preserve ANSI colors"):
+**Wire it into ccstatusline** as a *Custom Command* widget, giving the script's path directly:
 
 ```
-bash /path/to/skills/do/statusline-block.sh
+/path/to/skills/do/statusline-block.sh
 ```
+
+ccstatusline executes that path itself rather than through a shell, so the file must keep its
+executable bit — without it the widget fails with `exit: 126`.
 
 **Env config (all optional):**
 
