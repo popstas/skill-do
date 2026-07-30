@@ -1,10 +1,21 @@
 # Changelog
 
 
-## Unreleased
+## v0.8.0 - 2026-07-30
+
+### Features
+
+- Package the do skill as a standalone plugin
+
+### Bug Fixes
+
+- statusline: Make statusline-block.sh executable
+- Drop the redundant codex marketplace manifest
 
 ### Documentation
 
+- Add the skills CLI install path
+- Document the symlink install for local development
 - Add design spec for the standalone do plugin
 
 ## v0.7.0 - 2026-07-29
