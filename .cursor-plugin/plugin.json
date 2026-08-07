@@ -1,7 +1,7 @@
 {
   "name": "do",
   "displayName": "Do",
-  "description": "Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-plan.",
+  "description": "Turn a project's docs/TODO.md into a plan-and-code loop — evaluate the task list, brainstorm the approach, and escalate to ralphex-plan only for the most complex work.",
   "version": "0.8.0",
   "author": {
     "name": "Stanislav Popov",

@@ -1,6 +1,6 @@
 {
   "name": "do",
-  "description": "Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-plan.",
+  "description": "Turn a project's docs/TODO.md into a plan-and-code loop — evaluate the task list, brainstorm the approach, and escalate to ralphex-plan only for the most complex work.",
   "version": "0.8.0",
   "author": {
     "name": "Stanislav Popov",
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "Do",
     "shortDescription": "docs/TODO.md as an autonomous plan-and-code loop",
-    "longDescription": "The do skill reads a project's docs/TODO.md, sizes the open work, picks a planning mode to match it, and hands the result to the ralphex pipeline. It also edits the task list (do add / do remove) and covers the early-PR and finalize flows.",
+    "longDescription": "The do skill reads a project's docs/TODO.md, sizes the open work, and picks a planning mode to match it — brainstorming by default, escalating to the ralphex pipeline only for the most complex work and only after asking you. It also edits the task list (do add / do remove) and covers the early-PR and finalize flows.",
     "developerName": "Stanislav Popov",
     "category": "Developer Tools",
     "capabilities": [

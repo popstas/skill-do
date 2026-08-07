@@ -2,10 +2,10 @@
 
 The `do` skill: turn a project's `docs/TODO.md` into an autonomous plan-and-code loop.
 
-`/do` reads the task list, sizes the open work, picks a planning mode to match it — `ralphex-plan`
-→ `ralphex` for complex or 3+ task units, a lighter `brainstorming`/`plan` for one or two, auto mode
-for a single trivial task — and hands off. It also edits the list (`do add` / `do remove`) and
-covers the `do early pr` and `do finalize` flows.
+`/do` reads the task list, sizes the open work, picks a planning mode to match it — `brainstorming`
+by default, auto mode for a single trivial task, and `ralphex-plan` → `ralphex` only for genuinely
+complex work, and only after asking you first — and hands off. It also edits the list
+(`do add` / `do remove`) and covers the `do early pr` and `do finalize` flows.
 
 The skill itself lives in [`skills/do/`](skills/do/); its docs are
 [`skills/do/README.md`](skills/do/README.md).

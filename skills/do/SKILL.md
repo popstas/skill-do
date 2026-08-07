@@ -1,6 +1,6 @@
 ---
 name: do
-description: Turn a project's docs/TODO.md into an autonomous plan-and-code loop — evaluate the task list and hand it to ralphex-plan.
+description: Turn a project's docs/TODO.md into a plan-and-code loop — evaluate the task list, brainstorm the approach, and escalate to ralphex-plan only for the most complex work.
 argument-hint: "[add | remove | finalize | early pr]"
 ---
 
@@ -21,13 +21,19 @@ When invoked as `/do` (no sub-command):
    (grep/read the files the task touches — just enough to gauge scope: how many files/modules are
    involved, whether it's a localized tweak or a cross-cutting change) so you pick the right mode
    deliberately rather than guessing. Keep it lightweight — don't turn it into full planning.
-   - **Complex work, or 3+ open task units** → use `/ralphex:ralphex-plan` (see step 5) to author
-     a structured plan in `docs/plans/`, then execute it with `/ralphex:ralphex`.
-   - **1–2 straightforward tasks** → don't reach for ralphex. Use a lighter planning skill
-     (`brainstorming` / `plan` from available skills), clarify the approach, then implement it
-     in-session.
+
+   **The default is `brainstorming`.** ralphex is the exception, reserved for the hardest work —
+   don't reach for it just because there are several checkboxes.
+   - **Default — anything from a couple of tasks up to ordinary multi-task work** → use the
+     `brainstorming` skill, clarify the approach, then implement it in-session.
    - **A single trivial task** → suggest **auto mode**: skip planning entirely and just implement
      it directly in-session (no plan file, no ralphex).
+   - **Genuinely complex work only** (cross-cutting change across many modules, a long
+     multi-session effort, or work you can't hold in one session) → ralphex may be warranted.
+     **Never start it silently: ask the user first with `AskUserQuestion`**, offering
+     `brainstorming` (recommended) vs. `/ralphex:ralphex-plan` → `/ralphex:ralphex`, with a
+     one-line rationale for why this task might justify ralphex. Only take the ralphex path
+     (step 5) if the user picks it; otherwise fall back to brainstorming.
 
    In every mode, clarify the plan with the user, update `docs/TODO.md`, and commit.
 4. **Clear completed todos before implementing.** Remove already-completed (`[x]`) items from
@@ -35,8 +41,8 @@ When invoked as `/do` (no sub-command):
    (standalone cleanup → `task:` prefix; if it rides along with related code, fold it into that
    commit). (Completed items live in git history / the merged PR — they don't need to linger in
    the task list.)
-5. **ralphex-plan path** (only when you picked the complex / 3+ mode and no plan already exists
-   under `docs/plans/`): offer to run `/ralphex:ralphex-plan` referencing the queued TODO items.
+5. **ralphex-plan path** (only when the user explicitly chose ralphex in step 3 and no plan
+   already exists under `docs/plans/`): run `/ralphex:ralphex-plan` referencing the queued TODO items.
    It gathers context and asks about testing strategy interactively and writes a structured plan
    to `docs/plans/` — make sure end-to-end verification (what to run, how to confirm behavior) is
    captured while it asks.
