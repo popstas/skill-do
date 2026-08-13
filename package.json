@@ -1,6 +1,6 @@
 {
   "name": "skill-do",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "description": "The do skill packaged for Claude Code, Codex, and Cursor",
   "type": "module",

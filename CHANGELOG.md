@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v0.9.0 - 2026-08-13
+
+### Features
+
+- do: Split docs/TODO.md into `# next` and `# backlog`
+- do: Prefer brainstorming over ralphex
+
 ## v0.8.0 - 2026-07-30
 
 ### Features

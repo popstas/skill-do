@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "The do skill: docs/TODO.md as an autonomous plan-and-code loop",
-    "version": "0.8.0"
+    "version": "0.9.0"
   },
   "plugins": [
     {
       "name": "do",
       "source": "./",
-      "version": "0.8.0",
+      "version": "0.9.0",
       "description": "Turn a project's docs/TODO.md into a plan-and-code loop — evaluate the task list, brainstorm the approach, and escalate to ralphex-plan only for the most complex work."
     }
   ]
