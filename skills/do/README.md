@@ -7,6 +7,11 @@ wording) — `brainstorming` by default, auto mode for a single trivial task, an
 `ralphex` only for genuinely complex work and only after asking the user via `AskUserQuestion`),
 `do add` / `do remove`, `do early pr`, and `do finalize`.
 
+`docs/TODO.md` is split into two top-level sections: **`# next`** (the working queue `/do` plans
+from) and **`# backlog`** (parked work). A freshly created TODO gets only `# next` — `# backlog`
+appears the first time something is parked. This is also what the statusline block below reads:
+the lead section drives `done/total`, later sections add their open counts.
+
 ## `statusline_block` — ccstatusline Custom Command
 
 `statusline-block.sh` is a standalone bash command (not part of the LLM skill flow) for

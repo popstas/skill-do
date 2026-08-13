@@ -8,6 +8,29 @@ argument-hint: "[add | remove | finalize | early pr]"
 the task list, optionally kick off the ralphex pipeline, and edit the task list
 (`do add` / `do remove`).
 
+## `docs/TODO.md` layout
+
+The default layout is two top-level sections:
+
+```markdown
+# next
+
+- [ ] work queued for the next run
+
+# backlog
+
+- [ ] later / maybe — not picked up by `/do`
+```
+
+- **`# next` is the working queue** — `/do` plans and implements from it. `# backlog` is parked
+  work: never plan or implement it unless the user asks, or `# next` is empty (then offer to
+  promote items from `# backlog` instead of manufacturing work).
+- **Creating the file** (missing or empty): write **only `# next`** — don't add an empty
+  `# backlog`. Create `# backlog` the first time something is actually parked there.
+- **Don't restructure an existing TODO** that uses another layout (a `# TODO` title, dated
+  sections, etc.) — keep its formatting and add to the section that matches. Only introduce
+  `# next` / `# backlog` when creating the file or when the user asks for the split.
+
 ## Manual `/do` flow
 
 When invoked as `/do` (no sub-command):
@@ -15,7 +38,8 @@ When invoked as `/do` (no sub-command):
 1. Read project `CLAUDE.md` / `AGENTS.md` first (if present) — defer to any handoff or
    "how to launch work" instructions there before anything below.
 2. Read `docs/TODO.md`. Count "task units" (markdown list items `- `, `- [ ]`, `* `, plus level
-   1–3 headings other than the title). Summarize what's queued.
+   1–3 headings other than the title) **in `# next`** — that's what's queued. Mention the
+   `# backlog` size in one line, but don't plan from it.
 3. **Pick a planning mode** from the task summary — match the ceremony to the work. If the
    complexity isn't clear from the TODO wording alone, do a **quick code investigation** first
    (grep/read the files the task touches — just enough to gauge scope: how many files/modules are
@@ -48,14 +72,18 @@ When invoked as `/do` (no sub-command):
    captured while it asks.
 6. After the ralphex-plan is approved, offer to run `/ralphex:ralphex` to execute it autonomously
    (Full mode).
-7. If nothing is ready, say so and stop — don't manufacture work.
+7. If `# next` is empty, say so and stop — don't manufacture work. Offer to promote a `# backlog`
+   item into `# next` if the backlog has something worth doing.
 8. When `/ralphex:ralphex` is done, run the **`do finalize`** flow below (mark todo → PR → review → merge → release).
 
 ### `do add <task>` / `do remove <task>`
 
-- `do add <task>`: append a `- [ ] <task>` line to `docs/TODO.md` (create the file with a
-  top-level heading if it's missing). Keep existing formatting/sections.
-- `do remove <task>`: remove the matching list item (match on the task text, confirm if ambiguous).
+- `do add <task>`: append a `- [ ] <task>` line to the **`# next`** section of `docs/TODO.md`
+  (create the file with just `# next` if it's missing or empty). Keep existing
+  formatting/sections. If the request parks the task ("backlog", "later", "не сейчас"), append it
+  under `# backlog` instead, creating that heading if it doesn't exist yet.
+- `do remove <task>`: remove the matching list item from either section (match on the task text,
+  confirm if ambiguous).
 - **Commit prefix for standalone task-list edits is `task:`** (e.g. `task: add telegram
   retry task`) — use it when the change touches only `docs/TODO.md` with no related code.
 - **A TODO edit that accompanies related code may be folded into that code's commit** instead

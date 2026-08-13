@@ -40,6 +40,11 @@ class TestSkillMeta(unittest.TestCase):
         self.assertNotIn("todo:", body)  # stale prefix must not reappear
         self.assertIn("/ralphex:ralphex-plan", body)
 
+    def test_body_documents_todo_sections(self):
+        body = self.content
+        self.assertIn("# next", body)
+        self.assertIn("# backlog", body)
+
 
 if __name__ == "__main__":
     unittest.main()
