@@ -1,104 +1,121 @@
 # skill-do
 
-The `do` skill: turn a project's `docs/TODO.md` into an autonomous plan-and-code loop.
-
-`/do` reads the task list, sizes the open work, picks a planning mode to match it — `brainstorming`
-by default, auto mode for a single trivial task, and `ralphex-plan` → `ralphex` only for genuinely
-complex work, and only after asking you first — and hands off. It also edits the list
-(`do add` / `do remove`) and covers the `do early pr` and `do finalize` flows.
-
-The skill itself lives in [`skills/do/`](skills/do/); its docs are
-[`skills/do/README.md`](skills/do/README.md).
+`/do` is a skill that turns your project's `docs/TODO.md` into a working loop: you write down tasks,
+the agent decides how much planning each one deserves, implements it, opens the pull request and
+cuts the release — pausing for you at every point where a human should decide.
 
 ## Install
 
-The repo is its own marketplace, so all three agents install straight from it.
-
-**Any agent — [`skills`](https://github.com/vercel-labs/skills) CLI**
-
-```bash
-npx skills add popstas/skill-do        # into ./.claude/skills/do, records skills-lock.json
-npx skills add popstas/skill-do -g     # user-level, into ~/.claude/skills/do
-npx skills update do                   # pull a later release
-```
-
-It prompts for the agents to install into; `-a claude-code -s do -y` answers non-interactively.
-A global install writes the same `~/.claude/skills/do` the symlink flow below uses — pick one.
-
-**Claude Code**
+For Claude Code. Add the marketplace:
 
 ```text
 /plugin marketplace add popstas/skill-do
+```
+
+Then install the plugin:
+
+```text
 /plugin install do@skill-do
 ```
 
-**Codex CLI**
+Codex CLI, Cursor, the `skills` CLI and a symlink setup for working on the skill itself are in
+[`docs/details.md`](docs/details.md).
 
-```bash
-codex plugin marketplace add popstas/skill-do
-codex plugin add do@skill-do
+## Usage
+
+Everything revolves around one file, `docs/TODO.md`:
+
+```markdown
+# next
+
+- [ ] work queued for the next run
+
+# backlog
+
+- [ ] later / maybe — not picked up by `/do`
 ```
 
-**Cursor**
+`# next` is the working queue — that's what `/do` plans and implements from. `# backlog` is parked
+work that gets left alone until you ask for it. A fresh TODO gets only `# next`; `# backlog` appears
+the first time you park something. An existing TODO in some other layout is kept as is.
 
-Cursor reads [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json). Add the repo through
-Cursor's plugin marketplace UI, or clone it and point Cursor at the checkout.
+The chain below is the normal path: add tasks → run them → finalize into a PR → release.
 
-### Symlink instead, to work on the skill
+### Add
 
-A plugin install is a git snapshot under `~/.claude/plugins/cache/`, so edits to a local checkout do
-not reach it until you re-run `/plugin marketplace update`. To run the skill straight from a working
-copy, skip the plugin and symlink the skill directory:
-
-```bash
-ln -sfn "$PWD/skills/do" ~/.claude/skills/do
-ln -sfn ~/.claude/skills/do ~/.codex/skills/do   # Codex follows the chain
+```text
+/do add fix the retry timeout
+/do remove fix the retry timeout
 ```
 
-Every edit then applies on the next invocation, with nothing to reinstall. Use the plugin flow above
-or the symlink — not both, or two skills end up named `do`.
+`add` appends `- [ ] <task>` to `# next` (or to `# backlog` if you say "later" / "backlog" /
+"не сейчас"), `remove` deletes the matching line. Add `push` to the request to also commit and push
+the change. Task-list-only commits use the `task:` prefix; when a TODO edit belongs to code you're
+already writing, it rides along in that commit instead.
 
-> The `do` skill also ships inside
-> [`ai-slash-commands`](https://github.com/popstas/ai-slash-commands) for backward compatibility.
-> That repo's `npm run install-configs` deletes `~/.claude/skills/do` and copies its own version
-> over it, which silently replaces a symlink set up here.
+### Do
 
-## `statusline_block`
+```text
+/do
+```
 
-[`skills/do/statusline-block.sh`](skills/do/statusline-block.sh) is a standalone bash command for
-[ccstatusline](https://github.com/sirmalloc/ccstatusline) that renders the project's TODO progress:
+The agent reads `docs/TODO.md`, counts what's queued in `# next`, and — if the wording alone doesn't
+show the scope — takes a quick look at the code the task touches. Then it picks the amount of
+ceremony to match:
+
+- **a single trivial task** → just implement it, no planning;
+- **anything ordinary** (the default) → `brainstorming`: agree on the approach with you, then
+  implement it in the same session;
+- **genuinely complex work** (cross-cutting, multi-session) → it asks you first whether to go
+  through `ralphex-plan` → `ralphex`. It never starts that silently.
+
+Along the way it clears already-completed `[x]` items and **commits each task before starting the
+next one**, so one commit stays one change. If `# next` is empty it says so and stops — it won't
+invent work; it can offer to promote something from `# backlog` instead.
+
+### Finalize: PR
+
+```text
+/do finalize
+```
+
+Run this when the implementation is done and tests pass. It checks off the TODO items it can verify
+against the code, pushes the branch and opens a PR whose title and description are written **from
+the actual diff**, not from the original task wording, plus a checklist of manual checks. If more
+commits land later, the PR text is updated in the same turn as the push.
+
+Then it stops and waits for a human review. Nothing is merged until you say so; when you do, it
+asks which merge strategy to use (squash for noisy history, merge commit for repos that generate a
+changelog from commit messages).
+
+There's also `/do early pr` — only on explicit request — which opens a draft PR as soon as ralphex
+finishes implementing, so you can start reviewing while its own review passes keep refining the
+branch.
+
+### Release
+
+After the merge, the agent proposes a version bump — patch, minor or major — with a one-line
+rationale and **asks you to confirm the level**. It then follows the project's own release process;
+by default that means bumping the version and pushing a tag, letting CI create the GitHub release.
+Once the release actually exists, it rewrites the description for users rather than developers,
+dropping module-level detail and mentioning the PR.
+
+## Statusline
+
+`skills/do/statusline-block.sh` renders TODO progress in
+[ccstatusline](https://github.com/sirmalloc/ccstatusline):
 
 ```
 plain:  ☑ 3/8
 split:  ☑ 7/23 week │ 48 week+
 ```
 
-Configuration and wiring are documented in [`skills/do/README.md`](skills/do/README.md).
+Wiring and options: [`skills/do/README.md`](skills/do/README.md).
 
-## Development
+## More
 
-```bash
-python3 -m unittest discover skills/do/tests   # or: npm test
-```
-
-The tests cover the `SKILL.md` frontmatter and documented flows, the `statusline-block.sh` output
-modes, and agreement between the plugin manifests.
-
-## Releases
-
-Versioning is `0.x` while the skill is pre-release. The version appears in five manifests, so
-`scripts/release.mjs` is their only writer:
-
-```bash
-node scripts/release.mjs 0.8.0 --dry-run
-node scripts/release.mjs 0.8.0            # bump + changelog + commit + tag
-git push && git push origin v0.8.0        # the tag triggers the GitHub release
-```
-
-`CHANGELOG.md` is generated by [git-cliff](https://github.com/orhun/git-cliff) from conventional
-commits. History before `v0.7.0` was extracted from `ai-slash-commands` with `git filter-repo`,
-preserving the original commits; each historical feature series became one minor release. See
-[`docs/superpowers/specs/2026-07-29-skill-do-standalone-plugin-design.md`](docs/superpowers/specs/2026-07-29-skill-do-standalone-plugin-design.md).
+- [`docs/details.md`](docs/details.md) — other agents, local development, tests, releases.
+- [`skills/do/SKILL.md`](skills/do/SKILL.md) — the full instructions the agent actually reads.
 
 ## License
 
