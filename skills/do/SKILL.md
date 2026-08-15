@@ -60,6 +60,13 @@ When invoked as `/do` (no sub-command):
      (step 5) if the user picks it; otherwise fall back to brainstorming.
 
    In every mode, clarify the plan with the user, update `docs/TODO.md`, and commit.
+
+   **Commit each task before starting the next one.** Working through several tasks and committing
+   at the end forces a choice between one lumped commit and hunk-splitting that may be impossible:
+   two features whose new functions land on adjacent lines share a single diff hunk, and `git
+   add -p` is interactive, so it is unavailable in this harness. Commit while the working tree
+   still holds one task's worth of change. If it is already too late, say so in the commit message
+   and explain both changes there — don't pretend one commit is one change.
 4. **Clear completed todos before implementing.** Remove already-completed (`[x]`) items from
    `docs/TODO.md` so the plan/implement step only picks up open work, then commit the cleanup
    (standalone cleanup → `task:` prefix; if it rides along with related code, fold it into that
@@ -140,12 +147,43 @@ user where noted — **never merge or release without explicit human confirmatio
    description must match the actual changes**: read the diff (`git diff <base>...HEAD`) and write
    the summary from what changed, not from the original task wording. Keep it concise and
    reviewer-facing. Add checklist for manual checks of the features.
+
+   **`gh pr edit` may fail where `gh pr create` worked.** On repos that ever touched Projects
+   (classic) it dies with `GraphQL: Projects (classic) is being deprecated ...
+   (repository.pullRequest.projectCards)` — the edit path reads fields the create path does not.
+   Fall back to REST, which has no such field:
+
+   ```
+   gh api repos/<owner>/<repo>/pulls/<n> --method PATCH \
+     -f title="..." -F body=@<file>
+   ```
+
+   Write the body to a file and pass it with `-F body=@file` rather than inline: bodies are long
+   and contain backticks and newlines.
+
+   **Keep the PR in step with the branch.** When more commits land after the PR is open (the user
+   adds a task mid-session, review fixes, a follow-up feature), update title, description and the
+   manual checklist in the same turn as the push — a PR describing half the branch is worse than
+   one describing none of it, because the reviewer trusts it. Drop statements that the new commits
+   made untrue, e.g. a note about what is not yet deployed.
 3. **Wait for human review.** Stop here. Let a human review the PR and do not proceed until the
    user explicitly approves/asks to merge.
 4. **Merge the PR.** Once approved, inspect the branch commits first. If the history is noisy
    (fixups, `wip`, review-fix churn), prefer a **squash** merge — but **clarify with the user and
    ask which merge strategy** before merging. If the history is already clean, a normal merge is
    fine.
+
+   **Если PR стоят стеком** (PR-B нацелен на ветку PR-A, а не на default) — мержи снизу вверх и
+   **не передавай `--delete-branch` на нижнем**: удаление базы автоматически закрывает верхний PR,
+   после чего он попадает в тупик (реопен требует существующей базы, ретаргет — открытого PR).
+   Порядок: смержить PR-A без `--delete-branch` → перенацелить PR-B на default
+   (`gh api repos/<owner>/<repo>/pulls/<n> --method PATCH --field base=main`) → смержить PR-B →
+   удалить ветки. Если тупик уже случился, восстанови удалённую ветку из её последнего коммита
+   (`git push origin <sha>:refs/heads/<branch>`), затем реопен → ретаргет → удалить временную ветку.
+
+   **Если проект генерирует CHANGELOG из сообщений коммитов** (git-cliff, conventional commits) —
+   squash уничтожает разбивку: вся ветка схлопывается в одну запись. В таких репозиториях
+   рекомендуй merge commit и назови эту причину, когда спрашиваешь про стратегию.
 5. **Suggest a release.** After merge, offer to cut a version release. Decide the bump from the
    branch's changes — **patch** (bugfixes only), **minor** (backward-compatible features), or
    **major** (breaking changes). Propose your choice with a one-line rationale and **ask the user
