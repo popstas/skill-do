@@ -81,7 +81,7 @@ When invoked as `/do` (no sub-command):
    (Full mode).
 7. If `# next` is empty, say so and stop — don't manufacture work. Offer to promote a `# backlog`
    item into `# next` if the backlog has something worth doing.
-8. When `/ralphex:ralphex` is done, run the **`do finalize`** flow below (mark todo → PR → review → merge → release).
+8. When `/ralphex:ralphex` is done, run the **`do finalize`** flow below (mark todo → verify live → PR → review → merge → release).
 
 ### `do add <task>` / `do remove <task>`
 
@@ -135,7 +135,7 @@ Flow:
 
 An explicit `do finalize` means **ralphex has finished and the branch is ready to PR** — the
 implementation is done, so skip the plan/implement steps and start directly at step 1 below.
-(If `do early pr` already opened the PR, step 2 below just updates it instead of creating a new one.)
+(If `do early pr` already opened the PR, step 3 below just updates it instead of creating a new one.)
 
 Run once implementation is complete and tests pass. Walk these steps in order, pausing for the
 user where noted — **never merge or release without explicit human confirmation**.
@@ -143,7 +143,25 @@ user where noted — **never merge or release without explicit human confirmatio
 1. **Mark the TODO.** Check off (`[x]`) the items that are actually done — verify each against the
    code/tests, don't assume. Commit it — fold the checkbox into the related code commit when one
    is part of this change, otherwise use a standalone `task:` commit.
-2. **Create the PR.** Push the branch and open a PR against the default branch. **The PR title and
+
+   **Sync the project's own docs and skills.** A branch that changes the project's *surface* — a
+   CLI flag, a config key, a path, an output format — has to update everything that documents that
+   surface, not just the README: `CLAUDE.md` / `AGENTS.md` and any `skills/*/SKILL.md` living in
+   the repo. Check it by diffing the source of truth against the doc (e.g. list the flags the
+   argument parser defines and grep each one in the skill), not from memory — a flag that made it
+   into the README and the GUI still goes missing from a skill nobody reopened.
+
+2. **Verify against the real thing before the PR.** A green unit suite only covers what you thought
+   to assert. Run whatever live/end-to-end check the project defines (`CLAUDE.md` / `AGENTS.md`
+   usually names it — an opt-in e2e marker, a real export, a dev server) and exercise **every**
+   output path the branch touches, not just the one you had in mind: a change that adds a field to
+   one renderer can break a different renderer outright while every test stays green. Fix anything
+   found here TDD-style (failing test first) and commit it apart from the feature.
+
+   In the PR, state what you verified live and what you **could not** verify (no viewer installed,
+   no browser, no credentials) — an unverifiable path becomes a reviewer checklist item, never a
+   silent gap.
+3. **Create the PR.** Push the branch and open a PR against the default branch. **The PR title and
    description must match the actual changes**: read the diff (`git diff <base>...HEAD`) and write
    the summary from what changed, not from the original task wording. Keep it concise and
    reviewer-facing. Add checklist for manual checks of the features.
@@ -166,9 +184,9 @@ user where noted — **never merge or release without explicit human confirmatio
    manual checklist in the same turn as the push — a PR describing half the branch is worse than
    one describing none of it, because the reviewer trusts it. Drop statements that the new commits
    made untrue, e.g. a note about what is not yet deployed.
-3. **Wait for human review.** Stop here. Let a human review the PR and do not proceed until the
+4. **Wait for human review.** Stop here. Let a human review the PR and do not proceed until the
    user explicitly approves/asks to merge.
-4. **Merge the PR.** Once approved, inspect the branch commits first. If the history is noisy
+5. **Merge the PR.** Once approved, inspect the branch commits first. If the history is noisy
    (fixups, `wip`, review-fix churn), prefer a **squash** merge — but **clarify with the user and
    ask which merge strategy** before merging. If the history is already clean, a normal merge is
    fine.
@@ -184,15 +202,15 @@ user where noted — **never merge or release without explicit human confirmatio
    **Если проект генерирует CHANGELOG из сообщений коммитов** (git-cliff, conventional commits) —
    squash уничтожает разбивку: вся ветка схлопывается в одну запись. В таких репозиториях
    рекомендуй merge commit и назови эту причину, когда спрашиваешь про стратегию.
-5. **Suggest a release.** After merge, offer to cut a version release. Decide the bump from the
+6. **Suggest a release.** After merge, offer to cut a version release. Decide the bump from the
    branch's changes — **patch** (bugfixes only), **minor** (backward-compatible features), or
    **major** (breaking changes). Propose your choice with a one-line rationale and **ask the user
    to confirm the bump level** before tagging.
-6. **Release per the project's rules.** Follow the project's own release process (check
+7. **Release per the project's rules.** Follow the project's own release process (check
    `CLAUDE.md` / `deploy.py` / `.github/workflows`). **By default, releases are issued by a GitHub
    workflow that triggers on a version-tagged commit** — so bump the version, push the tag, and let
    CI create the GitHub release. Do **not** hand-create the release when the workflow owns it.
-7. **Rewrite the release description.** Wait until the release has actually been issued (CI
+8. **Rewrite the release description.** Wait until the release has actually been issued (CI
    finished), then edit its description. Base it on the PR description but **trim it for project
    users, not developers**: drop code/module-level detail, keep what changed and how to use it.
    **Include the PR mention** (e.g. `#12`).
